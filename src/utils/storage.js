@@ -231,23 +231,24 @@ export const settingsStore = {
 // --- Auth ---
 export const authStore = {
   login: async (email, password) => {
-    // Cobalah Supabase Auth dahulu
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    if (!error && data.user) {
-      sessionStorage.setItem('hima_logged_in', 'true');
-      sessionStorage.setItem('hima_user_id', data.user.id);
-      return { success: true };
+    // Cobalah Supabase Auth dahulu jika sudah dikonfigurasi
+    if (import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY !== 'no-key') {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (!error && data.user) {
+        sessionStorage.setItem('hima_logged_in', 'true');
+        sessionStorage.setItem('hima_user_id', data.user.id);
+        return { success: true };
+      }
     }
 
-    // Fallback ke localStorage (untuk testing/admin default)
+    // Fallback ke localStorage
     const creds = JSON.parse(localStorage.getItem(KEYS.AUTH) || '{}');
     if (email === creds.username && password === creds.password) {
       sessionStorage.setItem('hima_logged_in', 'true');
       return { success: true };
     }
     
-    return { success: false, error: error?.message || 'Invalid credentials' };
+    return { success: false, error: 'Invalid credentials' };
   },
   logout: async () => {
     await supabase.auth.signOut();
