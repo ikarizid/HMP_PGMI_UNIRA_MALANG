@@ -14,6 +14,10 @@ const KEYS = {
 // Default admin credentials (fallback jika Supabase Auth belum diset)
 const DEFAULT_ADMIN = { username: 'admin', password: 'pgmi2025' };
 
+const isSupabaseReady = () => {
+  return import.meta.env.VITE_SUPABASE_ANON_KEY && import.meta.env.VITE_SUPABASE_ANON_KEY !== 'no-key';
+};
+
 // Initialize localStorage — semua konten mulai KOSONG
 export function seedData() {
   // Force reset for clean slate before Supabase migration
@@ -83,148 +87,208 @@ function deleteItem(key, id) {
 // --- Berita ---
 export const beritaStore = {
   getAll: async () => {
-    const { data, error } = await supabase.from('berita').select('*').order('created_at', { ascending: false });
-    if (!error && data) return data;
+    try {
+      const { data, error } = await supabase.from('berita').select('*').order('created_at', { ascending: false });
+      if (!error && data && data.length > 0) return data;
+    } catch (e) { console.error(e); }
     return getAll(KEYS.BERITA); // Fallback
   },
   add: async (item) => {
-    const { data, error } = await supabase.from('berita').insert([item]).select();
-    if (!error && data) return data[0];
-    return addItem(KEYS.BERITA, item); // Fallback
+    const newItem = { ...item, created_at: new Date().toISOString() };
+    if (isSupabaseReady()) {
+      const { data, error } = await supabase.from('berita').insert([newItem]).select();
+      if (!error && data) return data[0];
+      console.error('Supabase Add Error:', error);
+    }
+    return addItem(KEYS.BERITA, newItem); // Fallback
   },
   update: async (id, updates) => {
-    const { data, error } = await supabase.from('berita').update(updates).eq('id', id).select();
-    if (!error && data) return data[0];
-    return updateItem(KEYS.BERITA, id, updates); // Fallback
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      const { data, error } = await supabase.from('berita').update(updates).eq('id', id).select();
+      if (!error && data) return data[0];
+    }
+    return updateItem(KEYS.BERITA, id, updates);
   },
   delete: async (id) => {
-    const { error } = await supabase.from('berita').delete().eq('id', id);
-    if (error) deleteItem(KEYS.BERITA, id); // Fallback
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      await supabase.from('berita').delete().eq('id', id);
+    }
+    deleteItem(KEYS.BERITA, id);
   },
 };
 
 // --- Event ---
 export const eventStore = {
   getAll: async () => {
-    const { data, error } = await supabase.from('event').select('*').order('tanggal', { ascending: true });
-    if (!error && data) return data;
+    try {
+      const { data, error } = await supabase.from('event').select('*').order('tanggal', { ascending: true });
+      if (!error && data && data.length > 0) return data;
+    } catch (e) { console.error(e); }
     return getAll(KEYS.EVENT);
   },
   add: async (item) => {
-    const { data, error } = await supabase.from('event').insert([item]).select();
-    if (!error && data) return data[0];
-    return addItem(KEYS.EVENT, item);
+    const newItem = { ...item, created_at: new Date().toISOString() };
+    if (isSupabaseReady()) {
+      const { data, error } = await supabase.from('event').insert([newItem]).select();
+      if (!error && data) return data[0];
+    }
+    return addItem(KEYS.EVENT, newItem);
   },
   update: async (id, updates) => {
-    const { data, error } = await supabase.from('event').update(updates).eq('id', id).select();
-    if (!error && data) return data[0];
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      const { data, error } = await supabase.from('event').update(updates).eq('id', id).select();
+      if (!error && data) return data[0];
+    }
     return updateItem(KEYS.EVENT, id, updates);
   },
   delete: async (id) => {
-    const { error } = await supabase.from('event').delete().eq('id', id);
-    if (error) deleteItem(KEYS.EVENT, id);
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      await supabase.from('event').delete().eq('id', id);
+    }
+    deleteItem(KEYS.EVENT, id);
   },
 };
 
 // --- Galeri ---
 export const galeriStore = {
   getAll: async () => {
-    const { data, error } = await supabase.from('galeri').select('*').order('tanggal', { ascending: false });
-    if (!error && data) return data;
+    try {
+      const { data, error } = await supabase.from('galeri').select('*').order('tanggal', { ascending: false });
+      if (!error && data && data.length > 0) return data;
+    } catch (e) { console.error(e); }
     return getAll(KEYS.GALERI);
   },
   add: async (item) => {
-    const { data, error } = await supabase.from('galeri').insert([item]).select();
-    if (!error && data) return data[0];
-    return addItem(KEYS.GALERI, item);
+    const newItem = { ...item, created_at: new Date().toISOString() };
+    if (isSupabaseReady()) {
+      const { data, error } = await supabase.from('galeri').insert([newItem]).select();
+      if (!error && data) return data[0];
+    }
+    return addItem(KEYS.GALERI, newItem);
   },
   update: async (id, updates) => {
-    const { data, error } = await supabase.from('galeri').update(updates).eq('id', id).select();
-    if (!error && data) return data[0];
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      const { data, error } = await supabase.from('galeri').update(updates).eq('id', id).select();
+      if (!error && data) return data[0];
+    }
     return updateItem(KEYS.GALERI, id, updates);
   },
   delete: async (id) => {
-    const { error } = await supabase.from('galeri').delete().eq('id', id);
-    if (error) deleteItem(KEYS.GALERI, id);
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      await supabase.from('galeri').delete().eq('id', id);
+    }
+    deleteItem(KEYS.GALERI, id);
   },
 };
 
 // --- Struktur ---
 export const strukturStore = {
   getBPH: async () => {
-    const { data, error } = await supabase.from('struktur').select('*').eq('divisi', 'BPH').order('urutan', { ascending: true });
-    if (!error && data) return data;
+    try {
+      const { data, error } = await supabase.from('struktur').select('*').eq('divisi', 'BPH').order('urutan', { ascending: true });
+      if (!error && data && data.length > 0) return data;
+    } catch (e) { console.error(e); }
     return getAll(KEYS.STRUKTUR_BPH);
   },
   getDept: async () => {
-    const { data, error } = await supabase.from('struktur').select('*').neq('divisi', 'BPH').order('urutan', { ascending: true });
-    if (!error && data) return data;
+    try {
+      const { data, error } = await supabase.from('struktur').select('*').neq('divisi', 'BPH').order('urutan', { ascending: true });
+      if (!error && data && data.length > 0) return data;
+    } catch (e) { console.error(e); }
     return getAll(KEYS.STRUKTUR_DEPT);
   },
   addBPH: async (item) => {
-    const { data, error } = await supabase.from('struktur').insert([{ ...item, divisi: 'BPH' }]).select();
-    if (!error && data) return data[0];
+    const newItem = { ...item, divisi: 'BPH', created_at: new Date().toISOString() };
+    if (isSupabaseReady()) {
+      const { data, error } = await supabase.from('struktur').insert([newItem]).select();
+      if (!error && data) return data[0];
+    }
     return addItem(KEYS.STRUKTUR_BPH, item);
   },
   addDept: async (item) => {
-    const { data, error } = await supabase.from('struktur').insert([item]).select();
-    if (!error && data) return data[0];
+    const newItem = { ...item, created_at: new Date().toISOString() };
+    if (isSupabaseReady()) {
+      const { data, error } = await supabase.from('struktur').insert([newItem]).select();
+      if (!error && data) return data[0];
+    }
     return addItem(KEYS.STRUKTUR_DEPT, item);
   },
   updateBPH: async (id, updates) => {
-    const { data, error } = await supabase.from('struktur').update(updates).eq('id', id).select();
-    if (!error && data) return data[0];
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      const { data, error } = await supabase.from('struktur').update(updates).eq('id', id).select();
+      if (!error && data) return data[0];
+    }
     return updateItem(KEYS.STRUKTUR_BPH, id, updates);
   },
   updateDept: async (id, updates) => {
-    const { data, error } = await supabase.from('struktur').update(updates).eq('id', id).select();
-    if (!error && data) return data[0];
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      const { data, error } = await supabase.from('struktur').update(updates).eq('id', id).select();
+      if (!error && data) return data[0];
+    }
     return updateItem(KEYS.STRUKTUR_DEPT, id, updates);
   },
   deleteBPH: async (id) => {
-    const { error } = await supabase.from('struktur').delete().eq('id', id);
-    if (error) deleteItem(KEYS.STRUKTUR_BPH, id);
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      await supabase.from('struktur').delete().eq('id', id);
+    }
+    deleteItem(KEYS.STRUKTUR_BPH, id);
   },
   deleteDept: async (id) => {
-    const { error } = await supabase.from('struktur').delete().eq('id', id);
-    if (error) deleteItem(KEYS.STRUKTUR_DEPT, id);
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      await supabase.from('struktur').delete().eq('id', id);
+    }
+    deleteItem(KEYS.STRUKTUR_DEPT, id);
   },
 };
 
 // --- Jurnal ---
 export const jurnalStore = {
   getAll: async () => {
-    const { data, error } = await supabase.from('jurnal').select('*').order('created_at', { ascending: false });
-    if (!error && data) return data;
+    try {
+      const { data, error } = await supabase.from('jurnal').select('*').order('created_at', { ascending: false });
+      if (!error && data && data.length > 0) return data;
+    } catch (e) { console.error(e); }
     return getAll(KEYS.JURNAL);
   },
   add: async (item) => {
-    const { data, error } = await supabase.from('jurnal').insert([item]).select();
-    if (!error && data) return data[0];
-    return addItem(KEYS.JURNAL, item);
+    const newItem = { ...item, created_at: new Date().toISOString() };
+    if (isSupabaseReady()) {
+      const { data, error } = await supabase.from('jurnal').insert([newItem]).select();
+      if (!error && data) return data[0];
+    }
+    return addItem(KEYS.JURNAL, newItem);
   },
   update: async (id, updates) => {
-    const { data, error } = await supabase.from('jurnal').update(updates).eq('id', id).select();
-    if (!error && data) return data[0];
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      const { data, error } = await supabase.from('jurnal').update(updates).eq('id', id).select();
+      if (!error && data) return data[0];
+    }
     return updateItem(KEYS.JURNAL, id, updates);
   },
   delete: async (id) => {
-    const { error } = await supabase.from('jurnal').delete().eq('id', id);
-    if (error) deleteItem(KEYS.JURNAL, id);
+    if (isSupabaseReady() && typeof id === 'string' && id.includes('-')) {
+      await supabase.from('jurnal').delete().eq('id', id);
+    }
+    deleteItem(KEYS.JURNAL, id);
   },
 };
 
 // --- Settings ---
 export const settingsStore = {
   get: async () => {
-    const { data, error } = await supabase.from('settings').select('*').single();
-    if (!error && data) return data;
+    if (isSupabaseReady()) {
+      const { data, error } = await supabase.from('settings').select('*').single();
+      if (!error && data) return data;
+    }
     const d = localStorage.getItem(KEYS.SETTINGS);
     return d ? JSON.parse(d) : {};
   },
   save: async (settings) => {
-    const { error } = await supabase.from('settings').upsert([{ id: 1, ...settings }]);
-    if (error) localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
+    if (isSupabaseReady()) {
+      const { error } = await supabase.from('settings').upsert([{ id: 1, ...settings }]);
+      if (!error) return;
+    }
+    localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
   },
 };
 
