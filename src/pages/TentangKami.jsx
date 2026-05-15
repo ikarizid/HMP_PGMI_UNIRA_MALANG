@@ -99,7 +99,7 @@ export default function TentangKami() {
                 <div className="person-card__info">
                   <h4>{p.name}</h4>
                   <span className="badge badge-primary">{p.role}</span>
-                  <p>{p.desc}</p>
+                  <p>{p.description}</p>
                 </div>
               </div>
             ))}
@@ -120,7 +120,7 @@ export default function TentangKami() {
                 <div className="dept-card__info">
                   <h4>{d.name}</h4>
                   <span className="dept-card__head">Kepala: {d.head}</span>
-                  <p>{d.desc}</p>
+                  <p>{d.description}</p>
                   <span className="badge badge-gold">{d.members} anggota</span>
                 </div>
               </div>

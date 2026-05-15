@@ -8,7 +8,7 @@ export default function AdminStruktur() {
   const [dept, setDept] = useState([]);
   const [tab, setTab] = useState('bph');
   const [modal, setModal] = useState(null);
-  const [form, setForm] = useState({ name: '', role: '', image: '', desc: '', head: '', members: 5 });
+  const [form, setForm] = useState({ name: '', role: '', image: '', description: '', head: '', members: 5 });
 
   useEffect(() => {
     const fetch = async () => {
@@ -19,12 +19,12 @@ export default function AdminStruktur() {
   }, []);
 
   const openAdd = () => {
-    setForm(tab === 'bph' ? { name: '', role: '', image: '', desc: '' } : { name: '', head: '', image: '', desc: '', members: 5 });
+    setForm(tab === 'bph' ? { name: '', role: '', image: '', description: '' } : { name: '', head: '', image: '', description: '', members: 5 });
     setModal('add');
   };
 
   const openEdit = (item) => {
-    setForm(tab === 'bph' ? { name: item.name, role: item.role, image: item.image, desc: item.desc } : { name: item.name, head: item.head, image: item.image, desc: item.desc, members: item.members });
+    setForm(tab === 'bph' ? { name: item.name, role: item.role, image: item.image, description: item.description } : { name: item.name, head: item.head, image: item.image, description: item.description, members: item.members });
     setModal(item);
   };
 
@@ -67,7 +67,7 @@ export default function AdminStruktur() {
               <td><img src={item.image} alt="" /></td>
               <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{tab === 'bph' ? item.name : item.head}</td>
               <td>{tab === 'bph' ? item.role : item.name}</td>
-              <td style={{ maxWidth: 200, fontSize: '0.82rem' }}>{item.desc}</td>
+              <td style={{ maxWidth: 200, fontSize: '0.82rem' }}>{item.description}</td>
               <td><div className="admin-actions"><button className="admin-btn-edit" onClick={() => openEdit(item)}><Pencil size={13} /></button><button className="admin-btn-delete" onClick={() => handleDelete(item.id)}><Trash2 size={13} /></button></div></td>
             </tr>
           ))}
@@ -92,7 +92,7 @@ export default function AdminStruktur() {
                 </>
               )}
               <ImageUpload value={form.image} onChange={(url) => setForm({...form, image: url})} label="Foto Profil" />
-              <div className="admin-form-group"><label>Deskripsi Tugas</label><textarea rows={3} value={form.desc} onChange={e => setForm({...form, desc: e.target.value})} /></div>
+              <div className="admin-form-group"><label>Deskripsi Tugas</label><textarea rows={3} value={form.description} onChange={e => setForm({...form, description: e.target.value})} /></div>
             </div>
             <div className="admin-modal__footer"><button className="btn btn-secondary btn-sm" onClick={() => setModal(null)}>Batal</button><button className="btn btn-primary btn-sm" onClick={handleSave}>Simpan</button></div>
           </div>
