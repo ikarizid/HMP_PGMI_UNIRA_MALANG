@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, MapPin, Phone, CheckCircle, Circle, ArrowLeft, Download, Users } from 'lucide-react';
 import { eventStore } from '../utils/storage';
@@ -5,8 +6,19 @@ import './EventDetail.css';
 
 export default function EventDetail() {
   const { slug } = useParams();
-  const events = eventStore.getAll();
-  const event = events.find(e => e.slug === slug);
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const events = await eventStore.getAll();
+      setEvent(events.find(e => e.slug === slug));
+      setLoading(false);
+    };
+    fetch();
+  }, [slug]);
+
+  if (loading) return <div className="section container">Memuat...</div>;
 
   if (!event) {
     return (

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Clock, User, Calendar } from 'lucide-react';
 import { beritaStore } from '../utils/storage';
@@ -5,11 +6,22 @@ import './BeritaDetail.css';
 
 export default function BeritaDetail() {
   const { slug } = useParams();
-  const articles = beritaStore.getAll();
-  const article = articles.find(a => a.slug === slug);
-  const related = articles.filter(a => a.slug !== slug).slice(0, 2);
+  const [article, setArticle] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!article) {
+  useEffect(() => {
+    const fetch = async () => {
+      const articles = await beritaStore.getAll();
+      const found = articles.find(a => a.slug === slug);
+      setArticle(found);
+      setRelated(articles.filter(a => a.slug !== slug).slice(0, 2));
+      setLoading(false);
+    };
+    fetch();
+  }, [slug]);
+
+  if (loading) return <div className="section container">Memuat...</div>;
     return (
       <div className="page-enter">
         <div className="page-hero"><div className="page-hero__bg" />
