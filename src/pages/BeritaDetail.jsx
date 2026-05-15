@@ -21,7 +21,9 @@ export default function BeritaDetail() {
     fetch();
   }, [slug]);
 
-  if (loading) return <div className="section container">Memuat...</div>;
+  if (loading) return <div className="section container" style={{padding: '100px 0'}}>Memuat...</div>;
+
+  if (!article) {
     return (
       <div className="page-enter">
         <div className="page-hero"><div className="page-hero__bg" />
