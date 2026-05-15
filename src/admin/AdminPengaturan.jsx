@@ -8,23 +8,28 @@ export default function AdminPengaturan() {
   const [passForm, setPassForm] = useState({ old: '', new1: '', new2: '' });
   const [passMsg, setPassMsg] = useState('');
 
-  useEffect(() => { setSettings(settingsStore.get()); }, []);
+  useEffect(() => {
+    const fetch = async () => { setSettings(await settingsStore.get()); };
+    fetch();
+  }, []);
 
-  const handleSaveSettings = () => {
-    settingsStore.save(settings);
+  const handleSaveSettings = async () => {
+    await settingsStore.save(settings);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const handleChangePass = () => {
+  const handleChangePass = async () => {
     setPassMsg('');
     if (passForm.new1 !== passForm.new2) { setPassMsg('❌ Password baru tidak cocok!'); return; }
-    if (passForm.new1.length < 4) { setPassMsg('❌ Password minimal 4 karakter!'); return; }
-    if (authStore.changePassword(passForm.old, passForm.new1)) {
+    if (passForm.new1.length < 6) { setPassMsg('❌ Password minimal 6 karakter (syarat Supabase)!'); return; }
+    
+    const success = await authStore.changePassword(passForm.new1);
+    if (success) {
       setPassMsg('✅ Password berhasil diubah!');
       setPassForm({ old: '', new1: '', new2: '' });
     } else {
-      setPassMsg('❌ Password lama salah!');
+      setPassMsg('❌ Gagal mengubah password. Pastikan Anda sudah login via Supabase.');
     }
   };
 

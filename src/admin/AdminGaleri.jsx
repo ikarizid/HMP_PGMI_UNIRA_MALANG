@@ -8,7 +8,10 @@ export default function AdminGaleri() {
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState({ judul: '', kategori: 'Kegiatan', foto_url: '', tanggal: '', deskripsi: '' });
 
-  useEffect(() => { setItems(galeriStore.getAll()); }, []);
+  useEffect(() => {
+    const fetch = async () => { setItems(await galeriStore.getAll()); };
+    fetch();
+  }, []);
 
   const openAdd = () => {
     setForm({ judul: '', kategori: 'Kegiatan', foto_url: '', tanggal: new Date().toISOString().split('T')[0], deskripsi: '' });
@@ -20,20 +23,20 @@ export default function AdminGaleri() {
     setModal(item);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (modal === 'add') {
-      galeriStore.add({ ...form });
+      await galeriStore.add({ ...form });
     } else {
-      galeriStore.update(modal.id, { ...form });
+      await galeriStore.update(modal.id, { ...form });
     }
-    setItems(galeriStore.getAll());
+    setItems(await galeriStore.getAll());
     setModal(null);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Yakin hapus foto ini?')) {
-      galeriStore.delete(id);
-      setItems(galeriStore.getAll());
+      await galeriStore.delete(id);
+      setItems(await galeriStore.getAll());
     }
   };
 

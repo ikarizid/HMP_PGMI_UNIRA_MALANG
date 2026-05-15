@@ -1,12 +1,14 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Image } from 'lucide-react';
 import './ImageUpload.css';
+import { supabase } from '../utils/supabase';
 
 export default function ImageUpload({ value, onChange, label = 'Foto' }) {
   const fileRef = useRef();
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const handleFile = (file) => {
+  const handleFile = async (file) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
       alert('Hanya file gambar yang diperbolehkan (JPG, PNG, WEBP)');
@@ -16,11 +18,29 @@ export default function ImageUpload({ value, onChange, label = 'Foto' }) {
       alert('Ukuran file maksimal 5MB');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      onChange(e.target.result);
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `uploads/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+
+      onChange(data.publicUrl);
+    } catch (error) {
+      alert('Gagal upload gambar: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDrop = (e) => {
@@ -52,15 +72,24 @@ export default function ImageUpload({ value, onChange, label = 'Foto' }) {
         </div>
       ) : (
         <div
-          className={`img-upload__dropzone ${dragOver ? 'img-upload__dropzone--active' : ''}`}
-          onClick={() => fileRef.current?.click()}
+          className={`img-upload__dropzone ${dragOver ? 'img-upload__dropzone--active' : ''} ${uploading ? 'img-upload__dropzone--uploading' : ''}`}
+          onClick={() => !uploading && fileRef.current?.click()}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={() => setDragOver(false)}
         >
-          <Upload size={24} />
-          <p>Klik atau drag & drop foto di sini</p>
-          <span>JPG, PNG, WEBP • Maks 5MB</span>
+          {uploading ? (
+            <div className="img-upload__loading">
+              <div className="spinner" />
+              <p>Sedang mengunggah...</p>
+            </div>
+          ) : (
+            <>
+              <Upload size={24} />
+              <p>Klik atau drag & drop foto di sini</p>
+              <span>JPG, PNG, WEBP • Maks 5MB</span>
+            </>
+          )}
         </div>
       )}
       <input

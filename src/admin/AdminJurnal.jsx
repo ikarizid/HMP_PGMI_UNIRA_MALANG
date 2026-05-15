@@ -9,17 +9,20 @@ export default function AdminJurnal() {
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({ title: '', category: 'Media Pembelajaran', type: 'Jurnal', author: '', description: '', image: '', downloadUrl: '#' });
 
-  useEffect(() => { setItems(jurnalStore.getAll()); }, []);
+  useEffect(() => {
+    const fetch = async () => { setItems(await jurnalStore.getAll()); };
+    fetch();
+  }, []);
 
   const openAdd = () => { setForm({ title: '', category: 'Media Pembelajaran', type: 'Jurnal', author: '', description: '', image: '', downloadUrl: '#' }); setModal('add'); };
   const openEdit = (item) => { setForm({ title: item.title, category: item.category, type: item.type, author: item.author, description: item.description, image: item.image, downloadUrl: item.downloadUrl || '#' }); setModal(item); };
 
-  const handleSave = () => {
-    if (modal === 'add') jurnalStore.add(form); else jurnalStore.update(modal.id, form);
-    setItems(jurnalStore.getAll()); setModal(null);
+  const handleSave = async () => {
+    if (modal === 'add') await jurnalStore.add(form); else await jurnalStore.update(modal.id, form);
+    setItems(await jurnalStore.getAll()); setModal(null);
   };
 
-  const handleDelete = (id) => { if (confirm('Yakin?')) { jurnalStore.delete(id); setItems(jurnalStore.getAll()); } };
+  const handleDelete = async (id) => { if (confirm('Yakin?')) { await jurnalStore.delete(id); setItems(await jurnalStore.getAll()); } };
 
   return (
     <div>

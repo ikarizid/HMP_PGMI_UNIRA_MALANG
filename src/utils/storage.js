@@ -128,40 +128,103 @@ export const eventStore = {
 
 // --- Galeri ---
 export const galeriStore = {
-  getAll: () => getAll(KEYS.GALERI),
-  add: (item) => addItem(KEYS.GALERI, item),
-  update: (id, data) => updateItem(KEYS.GALERI, id, data),
-  delete: (id) => deleteItem(KEYS.GALERI, id),
+  getAll: async () => {
+    const { data, error } = await supabase.from('galeri').select('*').order('tanggal', { ascending: false });
+    if (!error && data) return data;
+    return getAll(KEYS.GALERI);
+  },
+  add: async (item) => {
+    const { data, error } = await supabase.from('galeri').insert([item]).select();
+    if (!error && data) return data[0];
+    return addItem(KEYS.GALERI, item);
+  },
+  update: async (id, updates) => {
+    const { data, error } = await supabase.from('galeri').update(updates).eq('id', id).select();
+    if (!error && data) return data[0];
+    return updateItem(KEYS.GALERI, id, updates);
+  },
+  delete: async (id) => {
+    const { error } = await supabase.from('galeri').delete().eq('id', id);
+    if (error) deleteItem(KEYS.GALERI, id);
+  },
 };
 
 // --- Struktur ---
 export const strukturStore = {
-  getBPH: () => getAll(KEYS.STRUKTUR_BPH),
-  getDept: () => getAll(KEYS.STRUKTUR_DEPT),
-  addBPH: (item) => addItem(KEYS.STRUKTUR_BPH, item),
-  addDept: (item) => addItem(KEYS.STRUKTUR_DEPT, item),
-  updateBPH: (id, data) => updateItem(KEYS.STRUKTUR_BPH, id, data),
-  updateDept: (id, data) => updateItem(KEYS.STRUKTUR_DEPT, id, data),
-  deleteBPH: (id) => deleteItem(KEYS.STRUKTUR_BPH, id),
-  deleteDept: (id) => deleteItem(KEYS.STRUKTUR_DEPT, id),
+  getBPH: async () => {
+    const { data, error } = await supabase.from('struktur').select('*').eq('divisi', 'BPH').order('urutan', { ascending: true });
+    if (!error && data) return data;
+    return getAll(KEYS.STRUKTUR_BPH);
+  },
+  getDept: async () => {
+    const { data, error } = await supabase.from('struktur').select('*').neq('divisi', 'BPH').order('urutan', { ascending: true });
+    if (!error && data) return data;
+    return getAll(KEYS.STRUKTUR_DEPT);
+  },
+  addBPH: async (item) => {
+    const { data, error } = await supabase.from('struktur').insert([{ ...item, divisi: 'BPH' }]).select();
+    if (!error && data) return data[0];
+    return addItem(KEYS.STRUKTUR_BPH, item);
+  },
+  addDept: async (item) => {
+    const { data, error } = await supabase.from('struktur').insert([item]).select();
+    if (!error && data) return data[0];
+    return addItem(KEYS.STRUKTUR_DEPT, item);
+  },
+  updateBPH: async (id, updates) => {
+    const { data, error } = await supabase.from('struktur').update(updates).eq('id', id).select();
+    if (!error && data) return data[0];
+    return updateItem(KEYS.STRUKTUR_BPH, id, updates);
+  },
+  updateDept: async (id, updates) => {
+    const { data, error } = await supabase.from('struktur').update(updates).eq('id', id).select();
+    if (!error && data) return data[0];
+    return updateItem(KEYS.STRUKTUR_DEPT, id, updates);
+  },
+  deleteBPH: async (id) => {
+    const { error } = await supabase.from('struktur').delete().eq('id', id);
+    if (error) deleteItem(KEYS.STRUKTUR_BPH, id);
+  },
+  deleteDept: async (id) => {
+    const { error } = await supabase.from('struktur').delete().eq('id', id);
+    if (error) deleteItem(KEYS.STRUKTUR_DEPT, id);
+  },
 };
 
 // --- Jurnal ---
 export const jurnalStore = {
-  getAll: () => getAll(KEYS.JURNAL),
-  add: (item) => addItem(KEYS.JURNAL, item),
-  update: (id, data) => updateItem(KEYS.JURNAL, id, data),
-  delete: (id) => deleteItem(KEYS.JURNAL, id),
+  getAll: async () => {
+    const { data, error } = await supabase.from('jurnal').select('*').order('created_at', { ascending: false });
+    if (!error && data) return data;
+    return getAll(KEYS.JURNAL);
+  },
+  add: async (item) => {
+    const { data, error } = await supabase.from('jurnal').insert([item]).select();
+    if (!error && data) return data[0];
+    return addItem(KEYS.JURNAL, item);
+  },
+  update: async (id, updates) => {
+    const { data, error } = await supabase.from('jurnal').update(updates).eq('id', id).select();
+    if (!error && data) return data[0];
+    return updateItem(KEYS.JURNAL, id, updates);
+  },
+  delete: async (id) => {
+    const { error } = await supabase.from('jurnal').delete().eq('id', id);
+    if (error) deleteItem(KEYS.JURNAL, id);
+  },
 };
 
 // --- Settings ---
 export const settingsStore = {
-  get: () => {
+  get: async () => {
+    const { data, error } = await supabase.from('settings').select('*').single();
+    if (!error && data) return data;
     const d = localStorage.getItem(KEYS.SETTINGS);
     return d ? JSON.parse(d) : {};
   },
-  save: (settings) => {
-    localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
+  save: async (settings) => {
+    const { error } = await supabase.from('settings').upsert([{ id: 1, ...settings }]);
+    if (error) localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
   },
 };
 

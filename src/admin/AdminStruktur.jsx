@@ -10,7 +10,13 @@ export default function AdminStruktur() {
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({ name: '', role: '', image: '', desc: '', head: '', members: 5 });
 
-  useEffect(() => { setBph(strukturStore.getBPH()); setDept(strukturStore.getDept()); }, []);
+  useEffect(() => {
+    const fetch = async () => {
+      setBph(await strukturStore.getBPH());
+      setDept(await strukturStore.getDept());
+    };
+    fetch();
+  }, []);
 
   const openAdd = () => {
     setForm(tab === 'bph' ? { name: '', role: '', image: '', desc: '' } : { name: '', head: '', image: '', desc: '', members: 5 });
@@ -22,21 +28,21 @@ export default function AdminStruktur() {
     setModal(item);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (tab === 'bph') {
-      modal === 'add' ? strukturStore.addBPH(form) : strukturStore.updateBPH(modal.id, form);
-      setBph(strukturStore.getBPH());
+      modal === 'add' ? await strukturStore.addBPH(form) : await strukturStore.updateBPH(modal.id, form);
+      setBph(await strukturStore.getBPH());
     } else {
-      modal === 'add' ? strukturStore.addDept(form) : strukturStore.updateDept(modal.id, form);
-      setDept(strukturStore.getDept());
+      modal === 'add' ? await strukturStore.addDept(form) : await strukturStore.updateDept(modal.id, form);
+      setDept(await strukturStore.getDept());
     }
     setModal(null);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (!confirm('Yakin hapus?')) return;
-    if (tab === 'bph') { strukturStore.deleteBPH(id); setBph(strukturStore.getBPH()); }
-    else { strukturStore.deleteDept(id); setDept(strukturStore.getDept()); }
+    if (tab === 'bph') { await strukturStore.deleteBPH(id); setBph(await strukturStore.getBPH()); }
+    else { await strukturStore.deleteDept(id); setDept(await strukturStore.getDept()); }
   };
 
   const items = tab === 'bph' ? bph : dept;
