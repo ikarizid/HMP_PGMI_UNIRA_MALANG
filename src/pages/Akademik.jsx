@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SectionTitle from '../components/SectionTitle';
 import ResourceCard from '../components/ResourceCard';
 import { jurnalStore } from '../utils/storage';
@@ -7,7 +7,16 @@ import './Akademik.css';
 export default function Akademik() {
   const [active, setActive] = useState('Semua');
   const [search, setSearch] = useState('');
-  const resources = jurnalStore.getAll();
+  const [resources, setResources] = useState([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const data = await jurnalStore.getAll();
+      setResources(data);
+    };
+    fetch();
+  }, []);
+
   const resourceCategories = ['Semua', ...new Set(resources.map(r => r.category).filter(Boolean))];
   const filtered = resources.filter(r => {
     const matchCat = active === 'Semua' || r.category === active;

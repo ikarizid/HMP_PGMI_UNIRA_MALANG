@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { galeriStore } from '../utils/storage';
 import './Galeri.css';
@@ -6,7 +6,17 @@ import './Galeri.css';
 export default function Galeri() {
   const [active, setActive] = useState('Semua');
   const [lightbox, setLightbox] = useState(null);
-  const gallery = galeriStore.getAll().map(g => ({ ...g, src: g.foto_url, title: g.judul, category: g.kategori, deskripsi: g.deskripsi }));
+  const [galleryItems, setGalleryItems] = useState([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const data = await galeriStore.getAll();
+      setGalleryItems(data);
+    };
+    fetch();
+  }, []);
+
+  const gallery = galleryItems.map(g => ({ ...g, src: g.foto_url, title: g.judul, category: g.kategori, deskripsi: g.deskripsi }));
   const cats = ['Semua', ...new Set(gallery.map(g => g.category).filter(Boolean))];
   const filtered = active === 'Semua' ? gallery : gallery.filter(g => g.category === active);
 

@@ -8,7 +8,10 @@ export default function AdminEvent() {
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({ title: '', category: 'Lomba', date: '', location: '', status: 'Segera', description: '', image: '', contact: '', slug: '' });
 
-  useEffect(() => { setItems(eventStore.getAll()); }, []);
+  useEffect(() => {
+    const fetch = async () => { setItems(await eventStore.getAll()); };
+    fetch();
+  }, []);
 
   const openAdd = () => {
     setForm({ title: '', category: 'Lomba', date: '', location: '', status: 'Segera', description: '', image: '', contact: '' });
@@ -20,21 +23,21 @@ export default function AdminEvent() {
     setModal(item);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (modal === 'add') {
-      eventStore.add({ ...form, slug, featured: false, timeline: [], competitions: [] });
+      await eventStore.add({ ...form, slug, featured: false, timeline: [], competitions: [] });
     } else {
-      eventStore.update(modal.id, { ...form, slug });
+      await eventStore.update(modal.id, { ...form, slug });
     }
-    setItems(eventStore.getAll());
+    setItems(await eventStore.getAll());
     setModal(null);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Yakin hapus event ini?')) {
-      eventStore.delete(id);
-      setItems(eventStore.getAll());
+      await eventStore.delete(id);
+      setItems(await eventStore.getAll());
     }
   };
 

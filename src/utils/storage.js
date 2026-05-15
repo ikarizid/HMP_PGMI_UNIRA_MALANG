@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 const KEYS = {
   BERITA: 'hima_berita',
   EVENT: 'hima_event',
@@ -9,7 +11,7 @@ const KEYS = {
   AUTH: 'hima_auth',
 };
 
-// Default admin credentials
+// Default admin credentials (fallback jika Supabase Auth belum diset)
 const DEFAULT_ADMIN = { username: 'admin', password: 'pgmi2025' };
 
 // Initialize localStorage — semua konten mulai KOSONG
@@ -80,18 +82,48 @@ function deleteItem(key, id) {
 
 // --- Berita ---
 export const beritaStore = {
-  getAll: () => getAll(KEYS.BERITA),
-  add: (item) => addItem(KEYS.BERITA, item),
-  update: (id, data) => updateItem(KEYS.BERITA, id, data),
-  delete: (id) => deleteItem(KEYS.BERITA, id),
+  getAll: async () => {
+    const { data, error } = await supabase.from('berita').select('*').order('created_at', { ascending: false });
+    if (!error && data) return data;
+    return getAll(KEYS.BERITA); // Fallback
+  },
+  add: async (item) => {
+    const { data, error } = await supabase.from('berita').insert([item]).select();
+    if (!error && data) return data[0];
+    return addItem(KEYS.BERITA, item); // Fallback
+  },
+  update: async (id, updates) => {
+    const { data, error } = await supabase.from('berita').update(updates).eq('id', id).select();
+    if (!error && data) return data[0];
+    return updateItem(KEYS.BERITA, id, updates); // Fallback
+  },
+  delete: async (id) => {
+    const { error } = await supabase.from('berita').delete().eq('id', id);
+    if (error) deleteItem(KEYS.BERITA, id); // Fallback
+  },
 };
 
 // --- Event ---
 export const eventStore = {
-  getAll: () => getAll(KEYS.EVENT),
-  add: (item) => addItem(KEYS.EVENT, item),
-  update: (id, data) => updateItem(KEYS.EVENT, id, data),
-  delete: (id) => deleteItem(KEYS.EVENT, id),
+  getAll: async () => {
+    const { data, error } = await supabase.from('event').select('*').order('tanggal', { ascending: true });
+    if (!error && data) return data;
+    return getAll(KEYS.EVENT);
+  },
+  add: async (item) => {
+    const { data, error } = await supabase.from('event').insert([item]).select();
+    if (!error && data) return data[0];
+    return addItem(KEYS.EVENT, item);
+  },
+  update: async (id, updates) => {
+    const { data, error } = await supabase.from('event').update(updates).eq('id', id).select();
+    if (!error && data) return data[0];
+    return updateItem(KEYS.EVENT, id, updates);
+  },
+  delete: async (id) => {
+    const { error } = await supabase.from('event').delete().eq('id', id);
+    if (error) deleteItem(KEYS.EVENT, id);
+  },
 };
 
 // --- Galeri ---
@@ -135,32 +167,36 @@ export const settingsStore = {
 
 // --- Auth ---
 export const authStore = {
-  login: (username, password) => {
-    const creds = JSON.parse(localStorage.getItem(KEYS.AUTH) || '{}');
-    if (username === creds.username && password === creds.password) {
+  login: async (email, password) => {
+    // Cobalah Supabase Auth dahulu
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    if (!error && data.user) {
       sessionStorage.setItem('hima_logged_in', 'true');
-      return true;
+      sessionStorage.setItem('hima_user_id', data.user.id);
+      return { success: true };
     }
-    return false;
+
+    // Fallback ke localStorage (untuk testing/admin default)
+    const creds = JSON.parse(localStorage.getItem(KEYS.AUTH) || '{}');
+    if (email === creds.username && password === creds.password) {
+      sessionStorage.setItem('hima_logged_in', 'true');
+      return { success: true };
+    }
+    
+    return { success: false, error: error?.message || 'Invalid credentials' };
   },
-  logout: () => {
+  logout: async () => {
+    await supabase.auth.signOut();
     sessionStorage.removeItem('hima_logged_in');
+    sessionStorage.removeItem('hima_user_id');
   },
   isLoggedIn: () => {
     return sessionStorage.getItem('hima_logged_in') === 'true';
   },
-  changePassword: (oldPass, newPass) => {
-    const creds = JSON.parse(localStorage.getItem(KEYS.AUTH) || '{}');
-    if (oldPass === creds.password) {
-      creds.password = newPass;
-      localStorage.setItem(KEYS.AUTH, JSON.stringify(creds));
-      return true;
-    }
-    return false;
-  },
-  changeUsername: (newUsername) => {
-    const creds = JSON.parse(localStorage.getItem(KEYS.AUTH) || '{}');
-    creds.username = newUsername;
-    localStorage.setItem(KEYS.AUTH, JSON.stringify(creds));
-  },
+  // Update pass/user via Supabase nantinya
+  changePassword: async (newPass) => {
+    const { error } = await supabase.auth.updateUser({ password: newPass });
+    return !error;
+  }
 };

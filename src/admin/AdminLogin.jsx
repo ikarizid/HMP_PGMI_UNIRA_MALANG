@@ -12,13 +12,14 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    if (authStore.login(username, password)) {
+    const res = await authStore.login(username, password);
+    if (res.success) {
       navigate('/admin/dashboard');
     } else {
-      setError('Username atau password salah!');
+      setError(res.error || 'Username atau password salah!');
     }
   };
 

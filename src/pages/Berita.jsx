@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ArticleCard from '../components/ArticleCard';
 import { beritaStore } from '../utils/storage';
 import './Berita.css';
 
 export default function Berita() {
   const [active, setActive] = useState('Semua');
-  const articles = beritaStore.getAll();
+  const [articles, setArticles] = useState([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const data = await beritaStore.getAll();
+      setArticles(data);
+    };
+    fetch();
+  }, []);
+
   const categories = ['Semua', ...new Set(articles.map(a => a.category).filter(Boolean))];
   const filtered = active === 'Semua' ? articles : articles.filter(a => a.category === active);
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Award, BookOpen, Users, Calendar, Sparkles, ArrowRight, Trophy, ChevronRight } from 'lucide-react';
 import SectionTitle from '../components/SectionTitle';
@@ -25,8 +25,18 @@ function useScrollAnim() {
 
 export default function Homepage() {
   const pageRef = useScrollAnim();
-  const events = eventStore.getAll();
-  const articles = beritaStore.getAll();
+  const [events, setEvents] = useState([]);
+  const [articles, setArticles] = useState([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const [eData, aData] = await Promise.all([eventStore.getAll(), beritaStore.getAll()]);
+      setEvents(eData);
+      setArticles(aData);
+    };
+    fetch();
+  }, []);
+
   const featuredEvents = events.filter(e => e.featured).slice(0, 3);
   const latestArticles = articles.slice(0, 3);
 

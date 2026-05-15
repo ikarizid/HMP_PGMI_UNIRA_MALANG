@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Target, Eye, ChevronRight } from 'lucide-react';
 import SectionTitle from '../components/SectionTitle';
 import { strukturStore } from '../utils/storage';
@@ -7,9 +7,17 @@ import './TentangKami.css';
 
 export default function TentangKami() {
   const ref = useRef();
-  const bph = strukturStore.getBPH();
-  const departments = strukturStore.getDept();
+  const [bph, setBph] = useState([]);
+  const [departments, setDepartments] = useState([]);
+
   useEffect(() => {
+    const fetch = async () => {
+      const [bData, dData] = await Promise.all([strukturStore.getBPH(), strukturStore.getDept()]);
+      setBph(bData);
+      setDepartments(dData);
+    };
+    fetch();
+
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('visible'); }),
       { threshold: 0.1 }

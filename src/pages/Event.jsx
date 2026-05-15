@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SectionTitle from '../components/SectionTitle';
 import EventCard from '../components/EventCard';
 import { eventStore } from '../utils/storage';
@@ -8,7 +8,16 @@ const tabs = ['Semua', 'Lomba', 'Seminar', 'Workshop', 'Sosial'];
 
 export default function Event() {
   const [active, setActive] = useState('Semua');
-  const events = eventStore.getAll();
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const data = await eventStore.getAll();
+      setEvents(data);
+    };
+    fetch();
+  }, []);
+
   const filtered = active === 'Semua' ? events : events.filter(e => e.category === active);
 
   return (

@@ -8,7 +8,10 @@ export default function AdminBerita() {
   const [modal, setModal] = useState(null); // null | 'add' | item
   const [form, setForm] = useState({ title: '', excerpt: '', content: '', category: 'Liputan', author: '', date: '', image: '', readTime: '3 min' });
 
-  useEffect(() => { setItems(beritaStore.getAll()); }, []);
+  useEffect(() => {
+    const fetch = async () => { setItems(await beritaStore.getAll()); };
+    fetch();
+  }, []);
 
   const openAdd = () => {
     setForm({ title: '', excerpt: '', content: '', category: 'Liputan', author: '', date: new Date().toISOString().split('T')[0], image: '', readTime: '3 min' });
@@ -20,21 +23,21 @@ export default function AdminBerita() {
     setModal(item);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (modal === 'add') {
-      beritaStore.add({ ...form, slug, featured: false });
+      await beritaStore.add({ ...form, slug, featured: false });
     } else {
-      beritaStore.update(modal.id, { ...form, slug });
+      await beritaStore.update(modal.id, { ...form, slug });
     }
-    setItems(beritaStore.getAll());
+    setItems(await beritaStore.getAll());
     setModal(null);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Yakin hapus berita ini?')) {
-      beritaStore.delete(id);
-      setItems(beritaStore.getAll());
+      await beritaStore.delete(id);
+      setItems(await beritaStore.getAll());
     }
   };
 
